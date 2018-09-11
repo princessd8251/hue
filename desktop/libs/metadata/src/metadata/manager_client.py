@@ -132,6 +132,36 @@ class ManagerApi(object):
       raise ManagerApiException(e)
 
 
+  def update_flume_config(self, cluster_name):
+    '''
+    "{"items":[
+       {
+          "method":"PUT",
+          "url":"/api/v8/clusters/Cluster%201/services/FLUME-1/roleConfigGroups/FLUME-1-AGENT-BASE/config?message=Updated%20service%20and%20role%20type%20configurations.",
+          "body":{
+             "items":[
+                {
+                   "name":"agent_config_file",
+                   "value":"tier1.sources = source1\ntier1.channels = channel1\ntier1.sinks = sink1\n \ntier1.sources.source1.type = exec\ntier1.sources.source1.command = tail -F /var/log/hue/access.log\ntier1.sources.source1.channels = channel1\n \ntier1.channels.channel1.type = memory\ntier1.channels.channel1.capacity = 10000\ntier1.channels.channel1.transactionCapacity = 1000\n \ntier1.sinks.sink1.type = org.apache.flume.sink.kafka.KafkaSink\ntier1.sinks.sink1.topic = hueAccessLogs\ntier1.sinks.sink1.brokerList = spark2-envelope515-1.gce.cloudera.com:9092,spark2-envelope515-2.gce.cloudera.com:9092,spark2-envelope515-3.gce.cloudera.com:9092\ntier1.sinks.sink1.channel = channel1\ntier1.sinks.sink1.batchSize = 20 \n"
+                }
+             ]
+          },
+          "contentType":"application/json"
+       }
+    ]
+    }"
+    '''    
+    return self.batch(
+      items='''{"items":[{,"body":{"items":[{"name":"agent_config_file","value":"tier1.sources = source1\ntier1.channels = channel1\ntier1.sinks = sink1\n \ntier1.sources.source1.type = exec\ntier1.sources.source1.command = tail -F /var/log/hue/access.log\ntier1.sources.source1.channels = channel1\n \ntier1.channels.channel1.type = memory\ntier1.channels.channel1.capacity = 10000\ntier1.channels.channel1.transactionCapacity = 1000\n \ntier1.sinks.sink1.type = org.apache.flume.sink.kafka.KafkaSink\ntier1.sinks.sink1.topic = hueAccessLogs\ntier1.sinks.sink1.brokerList = spark2-envelope515-1.gce.cloudera.com:9092,spark2-envelope515-2.gce.cloudera.com:9092,spark2-envelope515-3.gce.cloudera.com:9092\ntier1.sinks.sink1.channel = channel1\ntier1.sinks.sink1.batchSize = 20 \n"}]},"contentType":"application/json"}]}'''
+    )
+
+  def batch(self, items):
+    try:
+      return self._root.post('batch', data=items, contenttype='application/json')
+    except RestException, e:
+      raise ManagerApiException(e)
+
+
   def _get_cluster(self, cluster_name=None):
     clusters = self._root.get('clusters/')['items']
 
